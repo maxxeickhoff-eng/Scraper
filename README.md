@@ -9,6 +9,7 @@ A small Python web scraper that collects book data from [books.toscrape.com](htt
 | `scraper.py` | Scrapes the first page (20 books) with `requests` + `BeautifulSoup` | 1. Build the scraper, 2. Data is flowing |
 | `schema.sql` | SQL to create the `books` table in Supabase | 3. Create a matching table |
 | `db.py` | Supabase client + helpers (count, upsert) | 4 & 5 |
+| `setup_supabase.py` | Asks for URL + key, writes `.env`, tests the connection | Setup |
 | `test_connection.py` | Checks that credentials work and the table exists | 4. Test the connection |
 | `main.py` | Scrapes and saves the books to Supabase | 5. Merge scraper + Supabase |
 
@@ -40,24 +41,36 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Create the Supabase project
+### 2. Create the table in Supabase
 
-1. Sign up at [supabase.com](https://supabase.com) and click **New project** (free tier is enough).
-2. Open **SQL Editor → New query**, paste the contents of `schema.sql` and click **Run**.
-3. Check **Table Editor** — a `books` table should now exist.
+You need a Supabase account and project ([supabase.com](https://supabase.com) → **New project**, free tier is enough).
 
-### 3. Add your credentials
+1. Copy the SQL to your clipboard: `pbcopy < schema.sql` (macOS), or open `schema.sql` and copy everything.
+2. In the Supabase dashboard, open your project and click **SQL Editor** in the left sidebar.
+3. Paste the SQL and click **Run** (bottom right). You should see *"Success. No rows returned"*.
+4. Click **Table Editor** in the left sidebar — the `books` table is now there (still empty).
+
+### 3. Connect the script to Supabase
+
+Get two values from the dashboard (keep the tab open):
+
+- **Project URL** — **Project Settings** (gear icon, bottom left) → **Data API** → *Project URL*
+- **Secret key** — **Project Settings** → **API Keys** → *Secret keys* → copy the key starting with `sb_secret_`
+  (on older projects: **Legacy API Keys** → `service_role`)
+
+Then run:
 
 ```bash
-cp .env.example .env
+python setup_supabase.py
 ```
 
-Fill in `.env`:
+Paste the URL, then the key (the key stays hidden while you paste — that's normal). The script saves both to `.env` and tests the connection right away. You should see:
 
-- `SUPABASE_URL` — **Project Settings → Data API → Project URL**
-- `SUPABASE_KEY` — **Project Settings → API Keys → secret key** (`sb_secret_...`, or the legacy `service_role` key)
+```
+Connection OK — table 'books' currently has 0 rows.
+```
 
-The secret key is needed because the table has Row Level Security enabled. Keep it private — `.env` is listed in `.gitignore` and is never pushed to GitHub.
+Why the secret key? The table has Row Level Security enabled, and the secret key is allowed to write to it. Keep it private — `.env` is in `.gitignore` and is never pushed to GitHub. (You can also create `.env` by hand from `.env.example`.)
 
 ## Usage
 
