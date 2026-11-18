@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book Catalogue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f1e9;
+    --bg-glow: #f0d9b5;
+    --surface: #fffdf9;
+    --surface-2: #f1ebe1;
+    --text: #231d17;
+    --muted: #776b5e;
+    --line: #e4dacb;
+    --accent: #b4542b;
+    --accent-soft: #f6e0d3;
+    --star: #e0a526;
+    --star-off: #ddd3c4;
+    --shadow: 0 1px 2px rgba(60, 40, 20, .06), 0 8px 24px rgba(60, 40, 20, .08);
+    --shadow-hover: 0 2px 4px rgba(60, 40, 20, .08), 0 18px 40px rgba(60, 40, 20, .16);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15120f;
+      --bg-glow: #3a2616;
+      --surface: #1f1b17;
+      --surface-2: #2a241f;
+      --text: #f3ece2;
+      --muted: #a8998a;
+      --line: #352e27;
+      --accent: #f08a5d;
+      --accent-soft: #3d261b;
+      --star: #f2b94a;
+      --star-off: #4a4038;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .3);
+      --shadow-hover: 0 2px 4px rgba(0, 0, 0, .4), 0 18px 40px rgba(0, 0, 0, .5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15120f;
+    --bg-glow: #3a2616;
+    --surface: #1f1b17;
+    --surface-2: #2a241f;
+    --text: #f3ece2;
+    --muted: #a8998a;
+    --line: #352e27;
+    --accent: #f08a5d;
+    --accent-soft: #3d261b;
+    --star: #f2b94a;
+    --star-off: #4a4038;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .3);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, .4), 0 18px 40px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(900px 420px at 85% -120px, var(--bg-glow), transparent 70%),
+      var(--bg);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+  /* Hero */
+  header { padding: 56px 0 28px; }
+  .topline { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .theme-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: grid; place-items: center;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 700;
+    font-size: clamp(40px, 7vw, 72px); line-height: 1; letter-spacing: -.02em;
+    margin: 14px 0 12px;
+  }
+  h1 em { font-style: italic; font-weight: 500; color: var(--accent); }
+  .lede { color: var(--muted); margin: 0; font-size: 15px; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .stat-value {
+    font-family: "Fraunces", Georgia, serif; font-size: 30px; font-weight: 700;
+    margin-top: 4px; font-variant-numeric: tabular-nums;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    padding: 12px 0;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .search {
+    flex: 1 1 280px; position: relative;
+  }
+  .search input {
+    width: 100%; height: 44px; padding: 0 44px 0 42px;
+    border-radius: 12px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font: inherit; font-size: 15px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .search input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .search kbd {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    font: 500 12px "Inter", sans-serif; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; background: var(--surface-2);
+  }
+  select, .price {
+    height: 44px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font: inherit; font-size: 14px;
+  }
+  select { padding: 0 12px; cursor: pointer; }
+  .price { display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 13px; color: var(--muted); }
+  .price output { color: var(--text); font-weight: 600; min-width: 36px; font-variant-numeric: tabular-nums; }
+  input[type="range"] { accent-color: var(--accent); width: 110px; }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 6px 12px; font: 500 13px "Inter", sans-serif; cursor: pointer;
+    display: inline-flex; gap: 6px; align-items: center; transition: all .15s;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .chip .n { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .chip[aria-pressed="true"] .n { color: inherit; opacity: .7; }
+  .chip .s { color: var(--star); }
+
+  .result-line { display: flex; justify-content: space-between; align-items: baseline; margin: 24px 0 14px; }
+  .result-line strong { font-family: "Fraunces", Georgia, serif; font-size: 20px; }
+  .reset { background: none; border: 0; color: var(--accent); font: 500 13px "Inter", sans-serif; cursor: pointer; }
+
+  /* Grid */
+  .grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+  }
+  .card {
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden; text-decoration: none; color: inherit;
+    box-shadow: var(--shadow);
+    transition: transform .2s ease, box-shadow .2s ease;
+    animation: rise .35s ease both;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .cover {
+    position: relative; aspect-ratio: 2 / 3; background: var(--surface-2); overflow: hidden;
+  }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
+  .card:hover .cover img { transform: scale(1.04); }
+  .price-tag {
+    position: absolute; right: 10px; bottom: 10px;
+    background: var(--surface); color: var(--text);
+    font-weight: 600; font-size: 13px; padding: 5px 10px; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .18); font-variant-numeric: tabular-nums;
+  }
+  .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .stars { font-size: 13px; letter-spacing: 1px; color: var(--star-off); }
+  .stars b { color: var(--star); font-weight: 400; }
+  .title {
+    font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 15px; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .title mark { background: var(--accent-soft); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .stock { margin-top: auto; padding-top: 4px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #3fa265; }
+  .dot.out { background: var(--muted); }
+
+  .empty { text-align: center; padding: 80px 16px; color: var(--muted); display: none; }
+  .empty strong { display: block; font-family: "Fraunces", Georgia, serif; font-size: 24px; color: var(--text); margin-bottom: 6px; }
+  #sentinel { height: 1px; }
+
+  footer { padding: 48px 0 40px; color: var(--muted); font-size: 13px; text-align: center; }
+  footer a { color: inherit; }
+
+  @media (max-width: 720px) {
+    header { padding-top: 32px; }
+    .toolbar { position: static; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-value { font-size: 24px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .search kbd { display: none; }
+    select, .price { flex: 1 1 auto; }
+    input[type="range"] { flex: 1; width: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .cover img { animation: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="topline">
+    <span class="eyebrow">Scraped from books.toscrape.com · stored in Supabase</span>
+    <button class="theme-btn" id="theme" aria-label="Toggle dark mode">◐</button>
+  </div>
+  <h1>The Book <em>Catalogue</em></h1>
+  <p class="lede" id="lede"></p>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Books shown</div><div class="stat-value" id="s-count">–</div></div>
+    <div class="stat"><div class="stat-label">Average price</div><div class="stat-value" id="s-price">–</div></div>
+    <div class="stat"><div class="stat-label">Average rating</div><div class="stat-value" id="s-rating">–</div></div>
+    <div class="stat"><div class="stat-label">Cheapest</div><div class="stat-value" id="s-min">–</div></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="controls">
+      <label class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search 1,000 titles…" autocomplete="off" aria-label="Search titles">
+        <kbd>/</kbd>
+      </label>
+      <label class="price">Max price <input id="max" type="range"> <output id="max-out"></output></label>
+      <select id="sort" aria-label="Sort by">
+        <option value="title">Title A–Z</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="rating">Best rated</option>
+      </select>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="result-line">
+    <strong id="result-text"></strong>
+    <button class="reset" id="reset" hidden>Clear filters</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty"><strong>No books found</strong>Try a different search or loosen the filters.</div>
+  <div id="sentinel"></div>
+</main>
+
+<footer class="wrap">
+  Data scraped from <a href="https://books.toscrape.com" target="_blank" rel="noopener">books.toscrape.com</a>
+  with Python, stored in Supabase · Applied Programming &amp; AI Fundamentals
+</footer>
+
+<script id="books-data" type="application/json">__BOOKS_JSON__</script>
+<script>
+  const BOOKS = JSON.parse(document.getElementById("books-data").textContent);
+  const UPDATED = "__UPDATED__";
+  const PAGE = 48;
+
+  const $ = (id) => document.getElementById(id);
+  const gbp = (n) => "£" + n.toFixed(2);
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const stars = (r) => "<b>" + "★".repeat(r) + "</b>" + "★".repeat(5 - r);
+
+  const prices = BOOKS.map((b) => b.price);
+  const priceMax = Math.ceil(Math.max(...prices));
+  const priceMin = Math.floor(Math.min(...prices));
+
+  const state = { q: "", rating: 0, max: priceMax, sort: "title" };
+  let filtered = [];
+  let shown = 0;
+
+  // Theme toggle (remembered per browser)
+  try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  $("theme").onclick = () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  };
+
+  // Header text
+  $("lede").textContent = `${BOOKS.length.toLocaleString("en")} titles · last updated ${UPDATED}`;
+  $("q").placeholder = `Search ${BOOKS.length.toLocaleString("en")} titles…`;
+
+  // Price slider
+  const range = $("max");
+  range.min = priceMin; range.max = priceMax; range.step = 1; range.value = priceMax;
+  $("max-out").textContent = "£" + priceMax;
+
+  // Rating chips, counting only books that match the current search and price
+  function renderChips(base = BOOKS) {
+    const counts = [0, 0, 0, 0, 0, 0];
+    base.forEach((b) => counts[b.rating]++);
+    const opts = [[0, "All ratings", base.length], [5, "5", counts[5]], [4, "4", counts[4]], [3, "3", counts[3]], [2, "2", counts[2]], [1, "1", counts[1]]];
+    $("chips").innerHTML = opts.map(([v, label, n]) =>
+      `<button class="chip" data-r="${v}" aria-pressed="${state.rating === v}">${v ? `<span class="s">★</span>` : ""}${label} <span class="n">${n}</span></button>`
+    ).join("");
+  }
+  $("chips").onclick = (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    state.rating = Number(chip.dataset.r);
+    apply();
+  };
+
+  function highlight(title) {
+    const safe = esc(title);
+    if (!state.q) return safe;
+    const re = new RegExp("(" + state.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "ig");
+    return safe.replace(re, "<mark>$1</mark>");
+  }
+
+  function card(b) {
+    return `<a class="card" href="${esc(b.product_url)}" target="_blank" rel="noopener">
+      <div class="cover"><img src="${esc(b.image_url)}" alt="" loading="lazy"><span class="price-tag">${gbp(b.price)}</span></div>
+      <div class="body">
+        <div class="stars" aria-label="${b.rating} out of 5 stars">${stars(b.rating)}</div>
+        <div class="title">${highlight(b.title)}</div>
+        <div class="stock"><span class="dot ${b.in_stock ? "" : "out"}"></span>${b.in_stock ? "In stock" : "Out of stock"}</div>
+      </div>
+    </a>`;
+  }
+
+  const sorters = {
+    "title": (a, b) => a.title.localeCompare(b.title),
+    "price-asc": (a, b) => a.price - b.price,
+    "price-desc": (a, b) => b.price - a.price,
+    "rating": (a, b) => b.rating - a.rating || a.price - b.price,
+  };
+
+  function apply() {
+    const q = state.q.toLowerCase();
+    const base = BOOKS.filter((b) => (!q || b.title.toLowerCase().includes(q)) && b.price <= state.max);
+    renderChips(base);
+    filtered = base.filter((b) => !state.rating || b.rating === state.rating).sort(sorters[state.sort]);
+
+    const n = filtered.length;
+    $("s-count").textContent = n.toLocaleString("en");
+    $("s-price").textContent = n ? gbp(filtered.reduce((s, b) => s + b.price, 0) / n) : "–";
+    $("s-rating").textContent = n ? (filtered.reduce((s, b) => s + b.rating, 0) / n).toFixed(1) + " ★" : "–";
+    $("s-min").textContent = n ? gbp(Math.min(...filtered.map((b) => b.price))) : "–";
+    $("result-text").textContent = n === BOOKS.length ? "All books" : `${n.toLocaleString("en")} ${n === 1 ? "match" : "matches"}`;
+    $("reset").hidden = !(state.q || state.rating || state.max < priceMax);
+    $("empty").style.display = n ? "none" : "block";
+
+    $("grid").innerHTML = "";
+    shown = 0;
+    more();
+  }
+
+  function more() {
+    if (shown >= filtered.length) return;
+    $("grid").insertAdjacentHTML("beforeend", filtered.slice(shown, shown + PAGE).map(card).join(""));
+    shown += PAGE;
+  }
+
+  // Infinite scroll
+  new IntersectionObserver((entries) => { if (entries[0].isIntersecting) more(); }, { rootMargin: "800px" })
+    .observe($("sentinel"));
+
+  // Controls
+  let timer;
+  $("q").oninput = (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); apply(); }, 120); };
+  range.oninput = () => { state.max = Number(range.value); $("max-out").textContent = "£" + range.value; apply(); };
+  $("sort").onchange = (e) => { state.sort = e.target.value; apply(); };
+  $("reset").onclick = () => {
+    Object.assign(state, { q: "", rating: 0, max: priceMax });
+    $("q").value = ""; range.value = priceMax; $("max-out").textContent = "£" + priceMax;
+    apply();
+  };
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && document.activeElement !== $("q")) { e.preventDefault(); $("q").focus(); }
+    if (e.key === "Escape" && document.activeElement === $("q")) { $("q").value = ""; state.q = ""; apply(); }
+  });
+
+  apply();
+</script>
+</body>
+</html>

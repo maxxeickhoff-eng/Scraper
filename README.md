@@ -8,10 +8,13 @@ A small Python web scraper that collects book data from [books.toscrape.com](htt
 |---|---|---|
 | `scraper.py` | Scrapes the full catalogue (1000 books, 50 pages) with `requests` + `BeautifulSoup` | 1. Build the scraper, 2. Data is flowing |
 | `schema.sql` | SQL to create the `books` table in Supabase | 3. Create a matching table |
-| `db.py` | Supabase client + helpers (count, upsert) | 4 & 5 |
+| `db.py` | Supabase client + helpers (count, upsert, read all) | 4 & 5 |
 | `setup_supabase.py` | Asks for URL + key, writes `.env`, tests the connection | Setup |
 | `test_connection.py` | Checks that credentials work and the table exists | 4. Test the connection |
-| `main.py` | Scrapes and saves the books to Supabase | 5. Merge scraper + Supabase |
+| `main.py` | Scrapes, saves the books to Supabase and rebuilds the overview page | 5. Merge scraper + Supabase |
+| `build_page.py` | Reads all books from Supabase and writes `index.html` | 6. Output page |
+| `templates/page.html` | Design of the overview page (HTML/CSS/JS) | 6. Output page |
+| `index.html` | Generated overview page — open it in any browser | 6. Output page |
 
 ## Data model
 
@@ -81,8 +84,11 @@ python scraper.py
 # Step 4: test the Supabase connection
 python test_connection.py
 
-# Step 5: scrape and store in Supabase
+# Step 5: scrape, store in Supabase and rebuild index.html
 python main.py
+
+# Step 6 only: rebuild index.html from what's already in Supabase
+python build_page.py
 ```
 
 Expected output of `main.py`:
@@ -91,7 +97,20 @@ Expected output of `main.py`:
 Scraped 1000 books from https://books.toscrape.com/
 Saved 1000 books to Supabase
 Table now has 1000 rows
+Updated index.html — open it in your browser
 ```
+
+## Output page
+
+`index.html` is a self-contained overview of every book in the database:
+
+- **Search** titles as you type (press `/` to jump to the search box), with matches highlighted
+- **Filter** by star rating and maximum price, **sort** by title, price or rating
+- **Live stats** (count, average price, average rating, cheapest) that follow your filters
+- Book covers, infinite scroll, light/dark mode, and a mobile layout
+- Click a book to open its page on books.toscrape.com
+
+The page reads its data from **Supabase** (not directly from the scraper), so it shows exactly what's stored in the table. The data is baked into the HTML at build time, so the page needs no API key and can be opened locally or hosted for free with GitHub Pages (repo **Settings → Pages → Deploy from branch `main`**).
 
 ## Notes
 

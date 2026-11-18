@@ -1,4 +1,4 @@
-"""Supabase helpers: create the client, test the connection, save books."""
+"""Supabase helpers: create the client, test the connection, save and read books."""
 
 import os
 from datetime import datetime, timezone
@@ -31,3 +31,15 @@ def save_books(client: Client, books: list) -> int:
     rows = [{**book, "scraped_at": now} for book in books]
     response = client.table(TABLE).upsert(rows, on_conflict="product_url").execute()
     return len(response.data)
+
+
+def fetch_all_books(client: Client, page_size: int = 1000) -> list:
+    """Read every row of the books table (Supabase returns max 1000 rows per request)."""
+    books = []
+    start = 0
+    while True:
+        response = client.table(TABLE).select("*").order("id").range(start, start + page_size - 1).execute()
+        books.extend(response.data)
+        if len(response.data) < page_size:
+            return books
+        start += page_size
