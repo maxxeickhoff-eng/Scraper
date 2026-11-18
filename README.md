@@ -6,7 +6,7 @@ A small Python web scraper that collects book data from [books.toscrape.com](htt
 
 | File | Purpose | Assignment step |
 |---|---|---|
-| `scraper.py` | Scrapes the first page (20 books) with `requests` + `BeautifulSoup` | 1. Build the scraper, 2. Data is flowing |
+| `scraper.py` | Scrapes the full catalogue (1000 books, 50 pages) with `requests` + `BeautifulSoup` | 1. Build the scraper, 2. Data is flowing |
 | `schema.sql` | SQL to create the `books` table in Supabase | 3. Create a matching table |
 | `db.py` | Supabase client + helpers (count, upsert) | 4 & 5 |
 | `setup_supabase.py` | Asks for URL + key, writes `.env`, tests the connection | Setup |
@@ -88,9 +88,9 @@ python main.py
 Expected output of `main.py`:
 
 ```
-Scraped 20 books from https://books.toscrape.com/
-Saved 20 books to Supabase
-Table now has 20 rows
+Scraped 1000 books from https://books.toscrape.com/
+Saved 1000 books to Supabase
+Table now has 1000 rows
 ```
 
 ## Notes

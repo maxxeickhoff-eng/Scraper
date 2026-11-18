@@ -1,4 +1,4 @@
-"""Step 1: Scrape the first page of https://books.toscrape.com."""
+"""Step 1: Scrape all pages of https://books.toscrape.com."""
 
 from urllib.parse import urljoin
 
@@ -38,10 +38,16 @@ def parse_book(article, page_url: str) -> dict:
 
 
 def scrape_books(url: str = BASE_URL) -> list:
-    """Scrape all books listed on the given page."""
-    soup = fetch_page(url)
-    articles = soup.find_all("article", class_="product_pod")
-    return [parse_book(article, url) for article in articles]
+    """Scrape every book in the catalogue by following the 'next' link across all pages."""
+    books = []
+    while url:
+        soup = fetch_page(url)
+        articles = soup.find_all("article", class_="product_pod")
+        books.extend(parse_book(article, url) for article in articles)
+
+        next_link = soup.find("li", class_="next")
+        url = urljoin(url, next_link.a["href"]) if next_link else None
+    return books
 
 
 if __name__ == "__main__":
