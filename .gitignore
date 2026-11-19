@@ -1,5 +1,20 @@
+# Secrets — real credentials live only in local .env files
 .env
+.env.*
+!.env.example
+
+# Python virtual environments and caches
 .venv/
+venv/
+env/
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# Editor / OS files
+.vscode/
+.idea/
 .DS_Store
+
+# Logs
+*.log
