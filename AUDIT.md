@@ -42,7 +42,7 @@ It is sanitized: no secret values, keys or personal contact details appear here.
 |---|---|---|---|---|
 | 1 | No secrets in tracked files or in the history. `.env` and `.venv/` are ignored, and `.env` was never committed. | Confirmed (OK) | No | — |
 | 2 | A Supabase secret key and a GitHub access token were pasted into an AI chat session during setup. They are not in the repository. | Confirmed (outside the repo) | **Yes** | Rotate both (see "Remaining items") |
-| 3 | The commit metadata contains the personal email addresses of both contributors, and they become public with the repo. | Confirmed | **Yes, decision needed** | See "Remaining items" |
+| 3 | The commit metadata contains the personal email addresses of both contributors, and they become public with the repo. | Confirmed | **Yes** | Fixed: the history was rewritten to GitHub `noreply` addresses, with both contributors agreeing |
 | 4 | The README is missing the **Learning** and **Limitations and assistance** sections, explains data collection only briefly, and has no screenshot. | Confirmed | **Yes** | Fixed |
 | 5 | `.gitignore` misses common cases: `.env.local`/`.env.*`, `venv/`, `env/`, `.vscode/`, `.idea/`, `*.log`, `.pytest_cache/`. | Confirmed | **Yes** | Fixed |
 | 6 | The README doesn't state the minimum Python version. The `supabase` package needs 3.9 or newer. | Confirmed | **Yes** | Fixed |
@@ -63,6 +63,7 @@ It is sanitized: no secret values, keys or personal contact details appear here.
 | 6 | Added "Python 3.9 or newer" to Setup | `README.md` |
 | 7 | Removed the GitHub Pages claim | `README.md` |
 | 8 | `.env` is now written to the project folder and set to owner-only access (`chmod 600`); the existing local `.env` was changed the same way | `setup_supabase.py` |
+| 3 | The repository is configured to commit with the GitHub `noreply` address. All existing commits were rewritten (`git filter-branch --env-filter`) so that author and committer emails use each contributor's `noreply` address. A backup was taken first, and the rewrite was checked to leave every file unchanged. | Git history, `.git/config` |
 
 ## Audit 2: re-check after fixes
 
@@ -73,6 +74,7 @@ The same checks were repeated on every file that would be published, and on the 
 | Secret patterns in files that would be published | None found |
 | Secret patterns in all commits | None found |
 | Email addresses or local user paths in files | None found |
+| Personal email addresses in commit metadata | None. All commits use GitHub `noreply` addresses. |
 | `.env`, `.env.local`, `.env.production` | Ignored |
 | `.env.example` | Tracked (placeholders only) |
 | `.venv/`, `venv/`, `env/`, `__pycache__/`, `.pytest_cache/`, `.vscode/`, `.idea/`, `*.log`, `.DS_Store` | Ignored |
@@ -86,7 +88,8 @@ Done before publishing:
 
 - [ ] **Rotate the Supabase secret key** under Project Settings → API Keys, then run `python setup_supabase.py` with the new key (finding 2).
 - [ ] **Revoke the exposed GitHub token** on GitHub under Settings → Developer settings → Tokens (finding 2).
-- [ ] **Decide on the commit emails** (finding 3). Both contributors should switch to GitHub's private `noreply` address for future commits. Removing the emails from existing commits would require rewriting the shared history with `git filter-repo` and needs both contributors to agree.
+- [x] **Commit emails** (finding 3): the history was rewritten to `noreply` addresses.
+- [ ] **Force-push the rewritten history** to GitHub. The teammate then re-clones the repository. Both contributors enable *Keep my email addresses private* under GitHub → Settings → Emails.
 - [ ] **Make the repository public** and check that it opens while logged out of GitHub (required by the submission guidelines).
 - [ ] Optional: add a `LICENSE` (finding 12).
 
