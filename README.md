@@ -164,20 +164,21 @@ Then open `index.html`.
 
 ## Learning
 
-**What I learned:**
+### What I learned
 
-- **Web scraping:** how to read a site's HTML structure in the browser's developer tools and turn it into selectors. Data isn't always in the visible text: the rating is hidden in a CSS class, and the full title is in an attribute.
-- **Pagination:** following the "next" link is more robust than hard-coding 50 page URLs, because it keeps working if the number of pages changes.
-- **Database design:** choosing proper column types, and using a unique column plus upsert so a scraper can run repeatedly without creating duplicates.
-- **Secrets:** they belong in a `.env` file that is ignored by Git, with a placeholder `.env.example` committed instead. Row Level Security controls who can access the table.
-- **Git and collaboration:** pulling a teammate's change (the pagination feature), and pushing through GitHub Desktop when HTTPS authentication from the terminal didn't work.
+The main thing I took away is how the three parts fit together: a script that pulls data off a website, a real database that keeps it, and a page that shows it again. Each part is small. Making them work together was the actual work.
 
-**Challenges and how I approached them:**
+Before writing any scraping code, I learned to open the browser's developer tools and look at the HTML first. A lot of the data isn't where you'd expect it. The star rating, for example, sits in a CSS class (`star-rating Three`), and long titles are cut off on the page, so the full title has to come from the link's `title` attribute. My teammate added the pagination. It follows the "next" link instead of hard-coding 50 page URLs, which I liked because it would still work if the shop had 49 or 60 pages.
 
-1. **Broken currency sign.** The first prices came out as `Â£51.77`. The site sends UTF-8 but doesn't declare it, so `requests` guessed the wrong encoding. Setting `response.encoding = "utf-8"` fixed it.
-2. **Writing to a protected table.** With Row Level Security enabled, the public key can't write to the table. Instead of opening the table to everyone, I used the secret key, which is only stored locally in `.env`.
-3. **Duplicates on re-runs.** A plain insert would add 1,000 new rows on every run. Making `product_url` unique and switching to an upsert solved it, and re-running confirmed the count stays at 1,000.
-4. **Credentials shared by mistake.** During setup an API key and a GitHub token were pasted into a chat. They never reached the repository, but the lesson was to type secrets only into the terminal or the password manager and to rotate a key once it has been exposed (see [AUDIT.md](AUDIT.md)).
+On the database side I learned why column types matter (prices as numbers, so the database can sort and average them) and how a unique column plus an upsert lets you run the same scraper again and again. I ran `main.py` several times on purpose: the table stayed at exactly 1,000 rows. I also learned what Row Level Security does. With RLS on, the public key can't write to the table, so the script uses the secret key, which only lives in my local `.env` file.
+
+### Challenges I ran into
+
+The biggest one was my own mistake. While setting up Supabase I pasted the secret key straight into the chat with my AI assistant, and later a GitHub token too. Neither ever ended up in the repository, but once a key has been shared like that you have to treat it as leaked. So I created a new Supabase key, deleted the old one and checked that the old key really gets rejected (it now returns HTTP 401). I deleted the GitHub token the same way. Since then I only paste keys into the terminal.
+
+Git was the second challenge. Pushing from the terminal failed because GitHub wanted a personal access token instead of my password, so I switched to GitHub Desktop, which was much easier. Later the publication audit showed that my personal email address, and my teammate's, were stored in every commit. I honestly didn't know commit metadata becomes public. We rewrote the history so every commit uses GitHub's private noreply address, force-pushed it, and now new commits use that address automatically.
+
+A smaller thing: the site sends UTF-8 but doesn't declare it, and without telling `requests` the encoding, the £ sign turns into `Â£`. One line (`response.encoding = "utf-8"`) solves it.
 
 ## Limitations and assistance
 
