@@ -17,6 +17,7 @@ It is sanitized: no secret values, keys or personal contact details appear here.
 | Audit 1 | 2026-11-19, read-only (no files changed, no code run) |
 | Fixes | 2026-11-19, after reviewing the findings |
 | Audit 2 | 2026-11-19, the same checks repeated after the fixes |
+| Audit 3 | 2026-11-25, logged-out check of the public repository |
 
 ## What was checked
 
@@ -86,19 +87,36 @@ The same checks were repeated on every file that would be published, and on the 
 
 Done before publishing:
 
-- [ ] **Rotate the Supabase secret key** under Project Settings → API Keys, then run `python setup_supabase.py` with the new key (finding 2).
-- [ ] **Revoke the exposed GitHub token** on GitHub under Settings → Developer settings → Tokens (finding 2).
+- [x] **Rotate the Supabase secret key** (finding 2). A new secret key was created and stored with `setup_supabase.py`, and the old key was deleted. Verified: the old key is now rejected (HTTP 401), and the new key connects.
+- [x] **Revoke the exposed GitHub token** (finding 2). Verified: the GitHub API rejects it (HTTP 401).
 - [x] **Commit emails** (finding 3): the history was rewritten to `noreply` addresses.
-- [ ] **Force-push the rewritten history** to GitHub. The teammate then re-clones the repository. Both contributors enable *Keep my email addresses private* under GitHub → Settings → Emails.
-- [ ] **Make the repository public** and check that it opens while logged out of GitHub (required by the submission guidelines).
+- [x] **Force-push the rewritten history** to GitHub. Verified: GitHub's `main` matches the local rewritten history.
+- [x] **Keep my email addresses private** and **Block command line pushes that expose my email** enabled in the repository owner's GitHub account.
+- [ ] **Teammate re-clones** the repository and enables the same email setting. Their old local clone still holds the old history.
+- [x] **Make the repository public** (see Audit 3 below).
 - [ ] Optional: add a `LICENSE` (finding 12).
+
+## Audit 3: check after publishing
+
+This check was run without logging in to GitHub, against the now-public repository.
+
+| Check | Result |
+|---|---|
+| Repository page while logged out | Opens (HTTP 200) |
+| Screenshot used in the README | Publicly reachable (HTTP 200) |
+| Branches on GitHub | `main` only, matching the local commit |
+| `.env` in the public repository | Not present |
+| Personal email addresses in commit metadata | None |
+| Secret patterns in the full public history | None found |
+| Files in the public repository | Only the files listed in the README's project structure |
 
 ## What could not be verified
 
-- **The state of the repository on GitHub:** at the time of the audit it was private, so only the local clone was audited. Other branches, releases, issues, GitHub Actions secrets or wiki pages on GitHub were not checked.
-- **Whether the exposed credentials have been rotated:** this has to be confirmed in the Supabase and GitHub dashboards.
+- **GitHub features beyond the code:** releases, issues, GitHub Actions secrets and wiki pages were not checked.
+- **Old commits cached by GitHub:** the commits from before the email rewrite may stay reachable for a while through their direct commit links (not through the repository). Removing them completely requires a request to GitHub Support.
+- **The teammate's account settings and local clone.**
 - **The live Supabase database:** only `schema.sql` and the code were checked, not policies or tables created later in the dashboard.
 - **Secrets in formats** that the pattern scan doesn't cover.
 - **The terms of use** of books.toscrape.com, and whether its cover images may be reused.
 
-Finding no issues in an automated scan does not prove the project is safe. The repository should be reviewed once more on github.com after it is made public.
+Finding no issues in an automated scan does not prove the project is safe.
